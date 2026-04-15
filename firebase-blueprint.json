@@ -1,0 +1,44 @@
+{
+  "entities": {
+    "PatientRecord": {
+      "title": "Patient Record",
+      "description": "Stores clinical and financial data for eye clinic patients",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string", "format": "date" },
+        "clinicName": { "type": "string" },
+        "patientName": { "type": "string" },
+        "mobileNumber": { "type": "string" },
+        "address": { "type": "string" },
+        "power": {
+          "type": "object",
+          "properties": {
+            "re": { "type": "string" },
+            "le": { "type": "string" },
+            "add": { "type": "string" }
+          }
+        },
+        "glass": { "type": "string" },
+        "frame": { "type": "string" },
+        "payment": {
+          "type": "object",
+          "properties": {
+            "total": { "type": "number" },
+            "paid": { "type": "number" },
+            "remaining": { "type": "number" }
+          }
+        },
+        "imageUrl": { "type": "string" },
+        "createdAt": { "type": "number" },
+        "uid": { "type": "string" }
+      },
+      "required": ["uid", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/patients/{patientId}": {
+      "schema": "PatientRecord",
+      "description": "Collection of patient records scoped by UID"
+    }
+  }
+}

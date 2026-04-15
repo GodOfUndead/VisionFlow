@@ -1,0 +1,8 @@
+{
+  "name": "OptiTrack - Eye Clinic Manager",
+  "description": "A minimal and efficient patient management system for eye clinics, featuring data storage, financial tracking, and image uploads.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": []
+}

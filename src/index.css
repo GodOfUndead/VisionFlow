@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  
+  --color-bg: #F8F9FA;
+  --color-sidebar: #FFFFFF;
+  --color-text-main: #1A1A1A;
+  --color-text-muted: #6C757D;
+  --color-accent: #2A5CFF;
+  --color-border: #E5E7EB;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  
+  --radius-theme: 8px;
+}
+
+@layer base {
+  body {
+    @apply bg-bg text-text-main font-sans;
+  }
+}

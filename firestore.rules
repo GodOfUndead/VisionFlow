@@ -1,0 +1,79 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: patients
+    // Document ID: auto-generated
+    // Fields:
+    //   - date: string (optional)
+    //   - clinicName: string (optional)
+    //   - patientName: string (optional)
+    //   - mobileNumber: string (optional)
+    //   - address: string (optional)
+    //   - power: map (optional) { re, le, add }
+    //   - glass: string (optional)
+    //   - frame: string (optional)
+    //   - payment: map (optional) { total, paid, remaining }
+    //   - imageUrl: string (optional)
+    //   - createdAt: number (required)
+    //   - uid: string (required) - owner UID
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.uid;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        (request.auth.token.email == "lokigottricked@gmail.com" && request.auth.token.email_verified == true);
+    }
+
+    function isValidPatient(data) {
+      return data.keys().hasAll(['uid', 'createdAt']) &&
+             data.uid == request.auth.uid &&
+             data.createdAt is number &&
+             (!('patientName' in data) || (data.patientName is string && data.patientName.size() < 200)) &&
+             (!('mobileNumber' in data) || (data.mobileNumber is string && data.mobileNumber.size() < 20)) &&
+             (!('payment' in data) || (data.payment is map && data.payment.total is number && data.payment.paid is number));
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /patients/{patientId} {
+      // Users can only read their own records
+      allow read: if isAuthenticated() && (resource.data.uid == request.auth.uid || isAdmin());
+      
+      // Users can create records for themselves
+      allow create: if isAuthenticated() && isValidPatient(request.resource.data);
+      
+      // Users can update their own records
+      allow update: if isAuthenticated() && isDocOwner() && isValidPatient(request.resource.data) && 
+                    request.resource.data.uid == resource.data.uid;
+      
+      // Users can delete their own records
+      allow delete: if isAuthenticated() && (isDocOwner() || isAdmin());
+    }
+
+    match /users/{userId} {
+      allow read, write: if isOwner(userId) || isAdmin();
+    }
+  }
+}
