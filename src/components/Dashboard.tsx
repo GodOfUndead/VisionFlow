@@ -17,13 +17,13 @@ export function Dashboard({ records }: DashboardProps) {
   }, [records]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 md:space-y-8">
       <header>
-        <h2 className="text-2xl font-semibold text-text-main">Clinic Overview</h2>
-        <p className="text-sm text-text-muted mt-1">Patient management and financial summary.</p>
+        <h2 className="text-xl md:text-2xl font-black text-text-main uppercase tracking-tighter italic">Clinic Overview</h2>
+        <p className="text-[11px] md:text-sm text-text-muted mt-0.5 font-bold uppercase tracking-tight">Patient management and financial summary.</p>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-5">
         <StatCard
           label="Total Revenue"
           value={formatCurrency(stats.total)}
@@ -46,11 +46,11 @@ export function Dashboard({ records }: DashboardProps) {
       </div>
 
       <section className="bg-white border-2 border-black shadow-brutal overflow-hidden">
-        <div className="p-6 border-b border-border flex items-center justify-between">
-          <h3 className="text-base font-semibold text-text-main">Recent Patients</h3>
+        <div className="p-4 md:p-6 border-b-2 border-black flex items-center justify-between bg-pastel-mint/10">
+          <h3 className="text-xs md:text-base font-black text-text-main uppercase tracking-tighter">Recent Patients</h3>
         </div>
         <div className="divide-y divide-border">
-          {records.slice(0, 5).map((record, i) => (
+          {records.slice(0, 3).map((record, i) => (
             <motion.div
               key={record.id}
               initial={{ opacity: 0 }}
@@ -95,11 +95,11 @@ function StatCard({ label, value, isWarning, delay, className }: { label: string
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.3 }}
-      className={cn("p-5 border-2 border-black shadow-brutal", className)}
+      className={cn("p-3 md:p-5 border-2 border-black shadow-brutal", className)}
     >
-      <div className="stat-label text-[11px] font-bold text-text-muted uppercase tracking-wider mb-2">{label}</div>
+      <div className="stat-label text-[10px] md:text-[11px] font-bold text-text-muted uppercase tracking-wider mb-1 md:mb-2">{label}</div>
       <p className={cn(
-        "text-2xl font-bold tracking-tight",
+        "text-xl md:text-2xl font-black tracking-tight uppercase italic",
         isWarning ? "text-warning" : "text-text-main"
       )}>{value}</p>
     </motion.div>

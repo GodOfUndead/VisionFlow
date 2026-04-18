@@ -16,6 +16,7 @@ export default function App() {
   const [records, setRecords] = React.useState<PatientRecord[]>([]);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [editingRecord, setEditingRecord] = React.useState<PatientRecord | null>(null);
 
   React.useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -40,9 +41,14 @@ export default function App() {
     setIsSubmitting(true);
     setError(null);
     try {
-      await patientService.addRecord(data);
+      if (editingRecord) {
+        await patientService.updateRecord(editingRecord.id, data);
+        setEditingRecord(null);
+      } else {
+        await patientService.addRecord(data);
+      }
       setActiveTab('list');
-      // On mobile, the new record will be at the top of the list
+      // On mobile, the new or updated record will be at the top level or easily visible
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err: any) {
       setError('Failed to save record. Please check your connection.');
@@ -50,6 +56,12 @@ export default function App() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleEditRecord = (record: PatientRecord) => {
+    setEditingRecord(record);
+    setActiveTab('entry');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDeleteRecord = async (id: string) => {
@@ -109,8 +121,24 @@ export default function App() {
       )}
 
       {activeTab === 'dashboard' && <Dashboard records={records} />}
-      {activeTab === 'entry' && <PatientForm onSubmit={handleAddRecord} isSubmitting={isSubmitting} />}
-      {activeTab === 'list' && <PatientList records={records} onDelete={handleDeleteRecord} />}
+      {activeTab === 'entry' && (
+        <PatientForm
+          onSubmit={handleAddRecord}
+          isSubmitting={isSubmitting}
+          initialData={editingRecord}
+          onCancel={editingRecord ? () => {
+            setEditingRecord(null);
+            setActiveTab('list');
+          } : undefined}
+        />
+      )}
+      {activeTab === 'list' && (
+        <PatientList
+          records={records}
+          onDelete={handleDeleteRecord}
+          onEdit={handleEditRecord}
+        />
+      )}
     </Layout>
   );
 }

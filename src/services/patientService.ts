@@ -105,5 +105,19 @@ export const patientService = {
     } catch (error) {
       handleFirestoreError(error, OperationType.DELETE, path);
     }
+  },
+
+  async updateRecord(id: string, input: PatientRecordInput) {
+    if (!auth.currentUser) throw new Error('User not authenticated');
+    
+    const path = `${COLLECTION_NAME}/${id}`;
+    try {
+      await updateDoc(doc(db, COLLECTION_NAME, id), {
+        ...input,
+        updatedAt: Date.now(),
+      });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.UPDATE, path);
+    }
   }
 };

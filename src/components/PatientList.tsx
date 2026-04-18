@@ -1,14 +1,16 @@
 import React from 'react';
-import { Search, Download, Eye, Phone, MapPin, Calendar, ExternalLink } from 'lucide-react';
+import { Search, Download, Eye, Phone, MapPin, Calendar, ExternalLink, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { formatCurrency, cn } from '@/src/lib/utils';
 import { PatientRecord } from '@/src/types';
 
 interface PatientListProps {
   records: PatientRecord[];
   onDelete: (id: string) => Promise<void>;
+  onEdit: (record: PatientRecord) => void;
 }
 
-export function PatientList({ records, onDelete }: PatientListProps) {
+export function PatientList({ records, onDelete, onEdit }: PatientListProps) {
   const [search, setSearch] = React.useState('');
   const [selectedPatient, setSelectedPatient] = React.useState<PatientRecord | null>(null);
   const [isDeleting, setIsDeleting] = React.useState(false);
@@ -23,12 +25,6 @@ export function PatientList({ records, onDelete }: PatientListProps) {
 
   const handleSelectPatient = (record: PatientRecord) => {
     setSelectedPatient(record);
-    // On mobile, scroll to the detail view once a patient is selected
-    if (window.innerWidth < 1024) {
-      setTimeout(() => {
-        detailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
-    }
   };
 
   const handleDelete = async () => {
@@ -96,7 +92,7 @@ export function PatientList({ records, onDelete }: PatientListProps) {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* List View */}
-        <div className="lg:col-span-2 bg-white border-2 border-black shadow-brutal p-4 md:p-6 flex flex-col h-fit max-h-[calc(100vh-250px)] lg:max-h-none overflow-y-auto">
+        <div className="lg:col-span-2 bg-white border-2 border-black shadow-brutal p-4 md:p-6 flex flex-col h-full overflow-y-auto">
           <div className="mb-6">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={16} />
@@ -142,90 +138,166 @@ export function PatientList({ records, onDelete }: PatientListProps) {
           </div>
         </div>
 
-        {/* Detail View */}
-        <div ref={detailRef} className="lg:sticky lg:top-8 h-fit scroll-mt-20">
+        {/* Detail View (Desktop) */}
+        <div className="hidden lg:block lg:sticky lg:top-8 h-fit">
           {selectedPatient ? (
-            <div className="bg-white border-2 border-black shadow-brutal overflow-hidden">
-              {selectedPatient.imageUrl ? (
-                <div className="aspect-video w-full">
-                  <img src={selectedPatient.imageUrl} alt="Patient" className="w-full h-full object-cover" />
-                </div>
-              ) : (
-                <div className="aspect-video w-full bg-bg flex items-center justify-center text-text-muted border-b border-border">
-                  <Eye size={48} strokeWidth={1} />
-                </div>
-              )}
-              
-              <div className="p-6 space-y-6">
-                <div>
-                  <h3 className="text-lg font-bold text-text-main">{selectedPatient.patientName}</h3>
-                  <p className="text-xs text-text-muted mt-1 uppercase tracking-wider font-bold">{selectedPatient.clinicName || 'No Clinic Specified'}</p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <DetailItem label="MOBILE" value={selectedPatient.mobileNumber} />
-                  <DetailItem label="DATE" value={selectedPatient.date} />
-                  <div className="col-span-2">
-                    <DetailItem label="ADDRESS" value={selectedPatient.address} />
-                  </div>
-                </div>
-
-                <div className="p-4 bg-bg rounded-md space-y-4">
-                  <h4 className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Power Details</h4>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center border-b border-border/50 pb-2">
-                      <span className="text-[10px] text-text-muted font-bold uppercase">RE (Right Eye)</span>
-                      <span className="text-sm font-bold text-text-main">{selectedPatient.power?.re || '-'}</span>
-                    </div>
-                    <div className="flex justify-between items-center border-b border-border/50 pb-2">
-                      <span className="text-[10px] text-text-muted font-bold uppercase">LE (Left Eye)</span>
-                      <span className="text-sm font-bold text-text-main">{selectedPatient.power?.le || '-'}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-[10px] text-text-muted font-bold uppercase">ADD</span>
-                      <span className="text-sm font-bold text-text-main">{selectedPatient.power?.add || '-'}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <DetailItem label="GLASS / FRAME" value={selectedPatient.glass} />
-                  <DetailItem label="EYE DROP" value={selectedPatient.eyeDrop} />
-                </div>
-
-                <div className="pt-4 border-t border-border flex items-center justify-between">
-                  <div>
-                    <p className="text-[10px] text-text-muted font-bold uppercase">Remaining</p>
-                    <p className={cn(
-                      "text-lg font-bold",
-                      selectedPatient.payment?.remaining > 0 ? "text-warning" : "text-success"
-                    )}>
-                      {formatCurrency(selectedPatient.payment?.remaining || 0)}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[10px] text-text-muted font-bold uppercase">Total</p>
-                    <p className="text-base font-bold text-text-main">{formatCurrency(selectedPatient.payment?.total || 0)}</p>
-                  </div>
-                </div>
-
-                <div className="pt-6 border-t border-border">
-                  <button
-                    onClick={handleDelete}
-                    disabled={isDeleting}
-                    className="w-full flex items-center justify-center gap-2 py-3 border border-red-100 text-red-500 text-xs font-bold uppercase tracking-widest rounded-md hover:bg-red-50 transition-colors disabled:opacity-50"
-                  >
-                    <span>{isDeleting ? 'Deleting...' : 'Delete Record'}</span>
-                  </button>
-                </div>
-              </div>
-            </div>
+            <PatientDetailContent 
+              patient={selectedPatient} 
+              onEdit={onEdit} 
+              onDelete={handleDelete} 
+              isDeleting={isDeleting} 
+            />
           ) : (
-            <div className="h-full flex flex-col items-center justify-center p-10 text-center bg-white rounded-theme border border-dashed border-border text-text-muted">
+            <div className="h-[400px] flex flex-col items-center justify-center p-10 text-center bg-white rounded-theme border border-dashed border-border text-text-muted">
               <Eye className="mb-3 opacity-20" size={40} />
               <p className="text-sm">Select a patient to view details</p>
             </div>
           )}
+        </div>
+
+        {/* Detail View (Mobile Bottom Sheet) */}
+        <AnimatePresence>
+          {selectedPatient && (
+            <div className="lg:hidden fixed inset-0 z-[60] flex items-end justify-center">
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSelectedPatient(null)}
+                className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              />
+              
+              {/* Sheet */}
+              <motion.div
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                className="relative w-full max-h-[90vh] bg-white border-t-2 border-x-2 border-black rounded-t-[2rem] shadow-2xl overflow-y-auto"
+              >
+                <div className="sticky top-0 right-0 p-4 flex justify-end z-10 bg-white/80 backdrop-blur-md">
+                  <button
+                    onClick={() => setSelectedPatient(null)}
+                    className="p-2 bg-pastel-mint border-2 border-black rounded-full shadow-brutal active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
+                  >
+                    <X size={24} />
+                  </button>
+                </div>
+                
+                <div className="px-6 pb-24">
+                  <PatientDetailContent 
+                    patient={selectedPatient} 
+                    onEdit={onEdit} 
+                    onDelete={handleDelete} 
+                    isDeleting={isDeleting} 
+                    isMobile
+                  />
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
+
+function PatientDetailContent({ 
+  patient, 
+  onEdit, 
+  onDelete, 
+  isDeleting,
+  isMobile 
+}: { 
+  patient: PatientRecord; 
+  onEdit: (p: PatientRecord) => void; 
+  onDelete: () => void; 
+  isDeleting: boolean;
+  isMobile?: boolean;
+}) {
+  return (
+    <div className={cn(
+      "bg-white overflow-hidden",
+      !isMobile && "border-2 border-black shadow-brutal"
+    )}>
+      {patient.imageUrl ? (
+        <div className="aspect-video w-full">
+          <img src={patient.imageUrl} alt="Patient" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+        </div>
+      ) : (
+        <div className="aspect-video w-full bg-bg flex items-center justify-center text-text-muted border-b border-border">
+          <Eye size={48} strokeWidth={1} />
+        </div>
+      )}
+      
+      <div className="p-6 space-y-6">
+        <div>
+          <h3 className="text-xl font-black text-text-main uppercase tracking-tighter italic">{patient.patientName}</h3>
+          <p className="text-xs text-text-muted mt-1 uppercase tracking-wider font-bold">{patient.clinicName || 'No Clinic Specified'}</p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <DetailItem label="MOBILE" value={patient.mobileNumber} />
+          <DetailItem label="DATE" value={patient.date} />
+          <div className="col-span-2">
+            <DetailItem label="ADDRESS" value={patient.address} />
+          </div>
+        </div>
+
+        <div className="p-4 bg-bg border-2 border-black rounded-md space-y-4">
+          <h4 className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Power Details</h4>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center border-b border-border/50 pb-2">
+              <span className="text-[10px] text-text-muted font-bold uppercase">RE (Right Eye)</span>
+              <span className="text-sm font-bold text-text-main">{patient.power?.re || '-'}</span>
+            </div>
+            <div className="flex justify-between items-center border-b border-border/50 pb-2">
+              <span className="text-[10px] text-text-muted font-bold uppercase">LE (Left Eye)</span>
+              <span className="text-sm font-bold text-text-main">{patient.power?.le || '-'}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-[10px] text-text-muted font-bold uppercase">ADD</span>
+              <span className="text-sm font-bold text-text-main">{patient.power?.add || '-'}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <DetailItem label="GLASS / FRAME" value={patient.glass} />
+          <DetailItem label="EYE DROP" value={patient.eyeDrop} />
+        </div>
+
+        <div className="pt-4 border-t-2 border-black flex items-center justify-between">
+          <div>
+            <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest">Remaining</p>
+            <p className={cn(
+              "text-xl font-black italic uppercase italic tracking-tighter",
+              patient.payment?.remaining > 0 ? "text-red-500" : "text-green-600"
+            )}>
+              {formatCurrency(patient.payment?.remaining || 0)}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest">Total</p>
+            <p className="text-lg font-black text-text-main">{formatCurrency(patient.payment?.total || 0)}</p>
+          </div>
+        </div>
+
+        <div className="pt-6 border-t-2 border-black flex flex-col gap-3">
+          <button
+            onClick={() => onEdit(patient)}
+            className="w-full flex items-center justify-center gap-2 py-4 bg-accent text-black text-xs font-black uppercase tracking-widest border-2 border-black shadow-brutal active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
+          >
+            <span>Edit Record</span>
+          </button>
+          <button
+            onClick={onDelete}
+            disabled={isDeleting}
+            className="w-full flex items-center justify-center gap-2 py-4 bg-pastel-orange text-black text-xs font-black uppercase tracking-widest border-2 border-black shadow-brutal active:shadow-none active:translate-x-[2px] active:translate-y-[2px] disabled:opacity-50"
+          >
+            <span>{isDeleting ? 'Deleting...' : 'Delete Record'}</span>
+          </button>
         </div>
       </div>
     </div>
@@ -236,7 +308,7 @@ function DetailItem({ label, value }: { label: string; value: string }) {
   return (
     <div className="space-y-1">
       <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">{label}</span>
-      <p className="text-sm font-medium text-text-main truncate">{value || '-'}</p>
+      <p className="text-sm font-black text-text-main truncate">{value || '-'}</p>
     </div>
   );
 }

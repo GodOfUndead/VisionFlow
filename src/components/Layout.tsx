@@ -60,27 +60,38 @@ export function Layout({ children, activeTab, onTabChange, userEmail, onLogout }
         )}
       </aside>
 
-      {/* Mobile Nav */}
-      <div className="md:hidden fixed bottom-6 left-6 right-6 bg-white border-2 border-black shadow-brutal z-50 flex justify-around p-2">
+      {/* Mobile Bottom Nav */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 h-20 bg-white border-t-2 border-black z-40 flex items-center justify-around px-6">
         <MobileNavItem
-          icon={<LayoutDashboard size={20} />}
+          icon={<LayoutDashboard size={24} />}
+          label="Home"
           active={activeTab === 'dashboard'}
           onClick={() => onTabChange('dashboard')}
         />
+        <div className="w-16 h-16" /> {/* Spacer for FAB */}
         <MobileNavItem
-          icon={<UserPlus size={20} />}
-          active={activeTab === 'entry'}
-          onClick={() => onTabChange('entry')}
-        />
-        <MobileNavItem
-          icon={<Users size={20} />}
+          icon={<Users size={24} />}
+          label="Records"
           active={activeTab === 'list'}
           onClick={() => onTabChange('list')}
         />
       </div>
 
+      {/* FAB - Fixed above bottom nav */}
+      <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+        <button
+          onClick={() => onTabChange('entry')}
+          className={cn(
+            "w-16 h-16 bg-accent border-2 border-black shadow-brutal flex items-center justify-center transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none",
+            activeTab === 'entry' && "bg-black text-white"
+          )}
+        >
+          <UserPlus size={32} />
+        </button>
+      </div>
+
       {/* Main Content */}
-      <main className="md:ml-[220px] min-h-screen p-4 md:p-8 pb-24 md:pb-8">
+      <main className="md:ml-[220px] min-h-screen p-3 md:p-8 pb-32 md:pb-8">
         <div className="max-w-6xl mx-auto">
           {children}
         </div>
@@ -107,16 +118,22 @@ function NavItem({ label, active, onClick }: { label: string; active: boolean; o
   );
 }
 
-function MobileNavItem({ icon, active, onClick }: { icon: React.ReactNode; active: boolean; onClick: () => void }) {
+function MobileNavItem({ icon, label, active, onClick }: { icon: React.ReactNode; label: string; active: boolean; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
       className={cn(
-        "p-4 border-2 border-transparent transition-all",
-        active ? "bg-accent border-black translate-x-[2px] translate-y-[2px]" : "text-black hover:bg-bg"
+        "flex flex-col items-center gap-1 transition-all",
+        active ? "text-black" : "text-text-muted"
       )}
     >
-      {icon}
+      <div className={cn(
+        "p-1 transition-all",
+        active ? "scale-110" : "scale-100"
+      )}>
+        {icon}
+      </div>
+      <span className="text-[10px] font-bold uppercase tracking-tight">{label}</span>
     </button>
   );
 }
