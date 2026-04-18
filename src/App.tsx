@@ -42,6 +42,8 @@ export default function App() {
     try {
       await patientService.addRecord(data);
       setActiveTab('list');
+      // On mobile, the new record will be at the top of the list
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err: any) {
       setError('Failed to save record. Please check your connection.');
       console.error(err);

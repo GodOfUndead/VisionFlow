@@ -50,6 +50,7 @@ service cloud.firestore {
              data.createdAt is number &&
              (!('patientName' in data) || (data.patientName is string && data.patientName.size() < 200)) &&
              (!('mobileNumber' in data) || (data.mobileNumber is string && data.mobileNumber.size() < 20)) &&
+             (!('eyeDrop' in data) || (data.eyeDrop is string && data.eyeDrop.size() < 500)) &&
              (!('payment' in data) || (data.payment is map && data.payment.total is number && data.payment.paid is number));
     }
 

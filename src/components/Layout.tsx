@@ -14,8 +14,8 @@ export function Layout({ children, activeTab, onTabChange, userEmail, onLogout }
   return (
     <div className="min-h-screen bg-bg text-text-main font-sans">
       {/* Sidebar */}
-      <aside className="fixed left-0 top-0 h-full w-[220px] bg-sidebar border-r border-border z-50 hidden md:flex flex-col p-6">
-        <div className="logo text-accent font-bold text-xl mb-10 flex items-center gap-2">
+      <aside className="fixed left-0 top-0 h-full w-[220px] bg-sidebar border-r-2 border-black z-50 hidden md:flex flex-col p-6">
+        <div className="logo text-black font-black text-2xl mb-10 flex items-center gap-2 italic uppercase tracking-tighter">
           OptiTrack
         </div>
 
@@ -61,7 +61,7 @@ export function Layout({ children, activeTab, onTabChange, userEmail, onLogout }
       </aside>
 
       {/* Mobile Nav */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-sidebar border-t border-border z-50 flex justify-around p-2">
+      <div className="md:hidden fixed bottom-6 left-6 right-6 bg-white border-2 border-black shadow-brutal z-50 flex justify-around p-2">
         <MobileNavItem
           icon={<LayoutDashboard size={20} />}
           active={activeTab === 'dashboard'}
@@ -95,10 +95,10 @@ function NavItem({ label, active, onClick }: { label: string; active: boolean; o
       <button
         onClick={onClick}
         className={cn(
-          "w-full text-left px-4 py-3 rounded-theme text-sm font-medium transition-colors",
+          "w-full text-left px-4 py-3 text-sm font-bold uppercase tracking-tight transition-all",
           active
-            ? "bg-[#F0F4FF] text-accent"
-            : "text-text-muted hover:bg-bg hover:text-text-main"
+            ? "bg-accent text-black translate-x-[4px] translate-y-[4px] shadow-none"
+            : "text-text-muted hover:bg-pastel-mint border-b-2 border-black mb-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
         )}
       >
         {label}
@@ -112,8 +112,8 @@ function MobileNavItem({ icon, active, onClick }: { icon: React.ReactNode; activ
     <button
       onClick={onClick}
       className={cn(
-        "p-3 rounded-2xl transition-all duration-200",
-        active ? "bg-zinc-900 text-white" : "text-zinc-400"
+        "p-4 border-2 border-transparent transition-all",
+        active ? "bg-accent border-black translate-x-[2px] translate-y-[2px]" : "text-black hover:bg-bg"
       )}
     >
       {icon}

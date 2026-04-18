@@ -19,6 +19,7 @@ export function PatientForm({ onSubmit, isSubmitting }: PatientFormProps) {
     power: { re: '', le: '', add: '' },
     glass: '',
     frame: '',
+    eyeDrop: '',
     payment: { total: 0, paid: 0, remaining: 0 },
     imageUrl: null,
   });
@@ -75,6 +76,7 @@ export function PatientForm({ onSubmit, isSubmitting }: PatientFormProps) {
       power: { re: '', le: '', add: '' },
       glass: '',
       frame: '',
+      eyeDrop: '',
       payment: { total: 0, paid: 0, remaining: 0 },
       imageUrl: null,
     });
@@ -88,7 +90,7 @@ export function PatientForm({ onSubmit, isSubmitting }: PatientFormProps) {
         <p className="text-sm text-text-muted mt-1">Fill in the clinical and payment details below.</p>
       </header>
 
-      <form onSubmit={handleSubmit} className="bg-white border border-border rounded-theme p-8 space-y-8">
+      <form onSubmit={handleSubmit} className="bg-white border-2 border-black shadow-brutal p-8 space-y-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
           <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
@@ -116,7 +118,24 @@ export function PatientForm({ onSubmit, isSubmitting }: PatientFormProps) {
 
             <div className="grid grid-cols-2 gap-4">
               <Input label="GLASS / FRAME" name="glass" placeholder="Ray-Ban Aviator" value={formData.glass} onChange={handleChange} />
+              <Input label="EYE DROP" name="eyeDrop" placeholder="e.g. Moxifloxacin" value={formData.eyeDrop} onChange={handleChange} />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
               <Input label="PAYMENT RECEIVED (₹)" name="payment.paid" type="number" value={formData.payment.paid.toString()} onChange={handleChange} />
+              <div className="input-group">
+                <label className="block text-[11px] font-bold text-text-muted uppercase mb-1">CLINIC NAME</label>
+                <select
+                  name="clinicName"
+                  className="w-full border border-border rounded-md p-2 text-sm focus:ring-1 focus:ring-accent outline-none bg-white h-[38px]"
+                  value={formData.clinicName}
+                  onChange={handleChange as any}
+                >
+                  <option value="">Select Clinic</option>
+                  <option value="Shakuntala Eye Care">Shakuntala Eye Care</option>
+                  <option value="Arogya Eye Care">Arogya Eye Care</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -143,7 +162,6 @@ export function PatientForm({ onSubmit, isSubmitting }: PatientFormProps) {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <Input label="CLINIC NAME" name="clinicName" placeholder="Vision Care" value={formData.clinicName} onChange={handleChange} />
               <Input label="DATE" name="date" type="date" value={formData.date} onChange={handleChange} />
             </div>
 
@@ -163,36 +181,40 @@ export function PatientForm({ onSubmit, isSubmitting }: PatientFormProps) {
           </div>
         </div>
 
-        <div className="btn-row flex gap-3 pt-4 border-t border-border">
+        <div className="btn-row flex flex-wrap gap-4 pt-6 border-t-2 border-black">
           <button
             type="submit"
             disabled={isSubmitting}
-            className="btn btn-primary bg-accent text-white px-6 py-2.5 rounded-md text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
+            className="flex-1 md:flex-none bg-accent text-black px-8 py-3 font-black uppercase tracking-tighter hover:bg-white transition-all shadow-brutal active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
           >
             {isSubmitting ? 'Saving...' : 'Save Record'}
           </button>
           <button
             type="button"
             onClick={() => document.querySelector<HTMLInputElement>('input[type="file"]')?.click()}
-            className="btn btn-secondary bg-[#E5E7EB] text-text-main px-6 py-2.5 rounded-md text-sm font-semibold hover:bg-zinc-300 transition-colors"
+            className="flex-1 md:flex-none bg-pastel-mint text-black px-8 py-3 font-black uppercase tracking-tighter hover:bg-white transition-all shadow-brutal active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
           >
             Capture Photo
           </button>
           <button
             type="button"
-            onClick={() => setFormData({
-              date: new Date().toISOString().split('T')[0],
-              clinicName: '',
-              patientName: '',
-              mobileNumber: '',
-              address: '',
-              power: { re: '', le: '', add: '' },
-              glass: '',
-              frame: '',
-              payment: { total: 0, paid: 0, remaining: 0 },
-              imageUrl: null,
-            })}
-            className="btn btn-outline border border-border text-text-main px-6 py-2.5 rounded-md text-sm font-semibold hover:bg-bg transition-colors ml-auto"
+            onClick={() => {
+              setFormData({
+                date: new Date().toISOString().split('T')[0],
+                clinicName: '',
+                patientName: '',
+                mobileNumber: '',
+                address: '',
+                power: { re: '', le: '', add: '' },
+                glass: '',
+                frame: '',
+                eyeDrop: '',
+                payment: { total: 0, paid: 0, remaining: 0 },
+                imageUrl: null,
+              });
+              setImagePreview(null);
+            }}
+            className="w-full md:w-auto md:ml-auto border-2 border-black bg-white text-black px-8 py-3 font-black uppercase tracking-tighter hover:bg-pastel-orange transition-all shadow-brutal active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
           >
             Clear
           </button>

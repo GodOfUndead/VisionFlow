@@ -20,6 +20,7 @@ export interface PatientRecord {
   power: PatientPower;
   glass: string;
   frame: string;
+  eyeDrop: string;
   payment: PatientPayment;
   imageUrl: string | null;
   createdAt: number;

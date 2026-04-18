@@ -12,6 +12,7 @@ export function PatientList({ records, onDelete }: PatientListProps) {
   const [search, setSearch] = React.useState('');
   const [selectedPatient, setSelectedPatient] = React.useState<PatientRecord | null>(null);
   const [isDeleting, setIsDeleting] = React.useState(false);
+  const detailRef = React.useRef<HTMLDivElement>(null);
 
   const filteredRecords = React.useMemo(() => {
     return records.filter(r =>
@@ -19,6 +20,16 @@ export function PatientList({ records, onDelete }: PatientListProps) {
       r.mobileNumber?.includes(search)
     );
   }, [records, search]);
+
+  const handleSelectPatient = (record: PatientRecord) => {
+    setSelectedPatient(record);
+    // On mobile, scroll to the detail view once a patient is selected
+    if (window.innerWidth < 1024) {
+      setTimeout(() => {
+        detailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+  };
 
   const handleDelete = async () => {
     if (!selectedPatient) return;
@@ -37,7 +48,7 @@ export function PatientList({ records, onDelete }: PatientListProps) {
   };
 
   const exportToCSV = () => {
-    const headers = ['Date', 'Clinic', 'Name', 'Mobile', 'Address', 'RE', 'LE', 'ADD', 'Glass', 'Frame', 'Total', 'Paid', 'Remaining'];
+    const headers = ['Date', 'Clinic', 'Name', 'Mobile', 'Address', 'RE', 'LE', 'ADD', 'Glass', 'Frame', 'Eye Drop', 'Total', 'Paid', 'Remaining'];
     const rows = records.map(r => [
       r.date,
       r.clinicName,
@@ -49,6 +60,7 @@ export function PatientList({ records, onDelete }: PatientListProps) {
       r.power?.add,
       r.glass,
       r.frame,
+      r.eyeDrop,
       r.payment?.total,
       r.payment?.paid,
       r.payment?.remaining
@@ -68,23 +80,23 @@ export function PatientList({ records, onDelete }: PatientListProps) {
 
   return (
     <div className="space-y-8">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b-2 border-black pb-6">
         <div>
-          <h2 className="text-2xl font-semibold text-text-main">Patient Records</h2>
-          <p className="text-sm text-text-muted mt-1">Manage and retrieve patient history.</p>
+          <h2 className="text-3xl font-black text-text-main uppercase tracking-tighter italic">Patient Records</h2>
+          <p className="text-sm text-text-muted mt-1 font-bold">Manage and retrieve patient history.</p>
         </div>
         <button
           onClick={exportToCSV}
-          className="btn btn-outline border border-border text-text-main px-4 py-2 rounded-md text-sm font-semibold hover:bg-bg transition-colors flex items-center gap-2"
+          className="w-full md:w-auto bg-pastel-blue text-black px-6 py-3 font-black uppercase tracking-tighter hover:bg-white transition-all shadow-brutal active:shadow-none active:translate-x-[2px] active:translate-y-[2px] flex items-center justify-center gap-2"
         >
-          <Download size={16} />
+          <Download size={18} />
           <span>Export CSV</span>
         </button>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* List View */}
-        <div className="lg:col-span-2 bg-white border border-border rounded-theme p-4 md:p-6 flex flex-col h-fit max-h-[calc(100vh-250px)] lg:max-h-none overflow-y-auto">
+        <div className="lg:col-span-2 bg-white border-2 border-black shadow-brutal p-4 md:p-6 flex flex-col h-fit max-h-[calc(100vh-250px)] lg:max-h-none overflow-y-auto">
           <div className="mb-6">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={16} />
@@ -102,10 +114,10 @@ export function PatientList({ records, onDelete }: PatientListProps) {
             {filteredRecords.map((record) => (
               <div
                 key={record.id}
-                onClick={() => setSelectedPatient(record)}
+                onClick={() => handleSelectPatient(record)}
                 className={cn(
                   "py-4 flex justify-between items-center cursor-pointer group transition-colors",
-                  selectedPatient?.id === record.id ? "bg-[#F0F4FF] -mx-6 px-6" : "hover:bg-bg -mx-6 px-6"
+                  selectedPatient?.id === record.id ? "bg-accent -mx-6 px-6" : "hover:bg-pastel-mint -mx-6 px-6"
                 )}
               >
                 <div className="patient-info flex-1 min-w-0 pr-4">
@@ -131,9 +143,9 @@ export function PatientList({ records, onDelete }: PatientListProps) {
         </div>
 
         {/* Detail View */}
-        <div className="lg:sticky lg:top-8 h-fit">
+        <div ref={detailRef} className="lg:sticky lg:top-8 h-fit scroll-mt-20">
           {selectedPatient ? (
-            <div className="bg-white rounded-theme border border-border shadow-sm overflow-hidden">
+            <div className="bg-white border-2 border-black shadow-brutal overflow-hidden">
               {selectedPatient.imageUrl ? (
                 <div className="aspect-video w-full">
                   <img src={selectedPatient.imageUrl} alt="Patient" className="w-full h-full object-cover" />
@@ -158,27 +170,27 @@ export function PatientList({ records, onDelete }: PatientListProps) {
                   </div>
                 </div>
 
-                <div className="p-4 bg-bg rounded-md space-y-3">
+                <div className="p-4 bg-bg rounded-md space-y-4">
                   <h4 className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Power Details</h4>
-                  <div className="grid grid-cols-3 gap-2 text-center">
-                    <div>
-                      <p className="text-[9px] text-text-muted font-bold">RE</p>
-                      <p className="text-sm font-bold text-text-main">{selectedPatient.power?.re || '-'}</p>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center border-b border-border/50 pb-2">
+                      <span className="text-[10px] text-text-muted font-bold uppercase">RE (Right Eye)</span>
+                      <span className="text-sm font-bold text-text-main">{selectedPatient.power?.re || '-'}</span>
                     </div>
-                    <div>
-                      <p className="text-[9px] text-text-muted font-bold">LE</p>
-                      <p className="text-sm font-bold text-text-main">{selectedPatient.power?.le || '-'}</p>
+                    <div className="flex justify-between items-center border-b border-border/50 pb-2">
+                      <span className="text-[10px] text-text-muted font-bold uppercase">LE (Left Eye)</span>
+                      <span className="text-sm font-bold text-text-main">{selectedPatient.power?.le || '-'}</span>
                     </div>
-                    <div>
-                      <p className="text-[9px] text-text-muted font-bold">ADD</p>
-                      <p className="text-sm font-bold text-text-main">{selectedPatient.power?.add || '-'}</p>
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] text-text-muted font-bold uppercase">ADD</span>
+                      <span className="text-sm font-bold text-text-main">{selectedPatient.power?.add || '-'}</span>
                     </div>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <DetailItem label="GLASS" value={selectedPatient.glass} />
-                  <DetailItem label="FRAME" value={selectedPatient.frame} />
+                  <DetailItem label="GLASS / FRAME" value={selectedPatient.glass} />
+                  <DetailItem label="EYE DROP" value={selectedPatient.eyeDrop} />
                 </div>
 
                 <div className="pt-4 border-t border-border flex items-center justify-between">

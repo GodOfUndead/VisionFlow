@@ -28,21 +28,24 @@ export function Dashboard({ records }: DashboardProps) {
           label="Total Revenue"
           value={formatCurrency(stats.total)}
           delay={0}
+          className="bg-pastel-blue"
         />
         <StatCard
           label="Pending Balance"
           value={formatCurrency(stats.remaining)}
           isWarning
           delay={0.1}
+          className="bg-pastel-orange"
         />
         <StatCard
           label="Total Patients"
           value={stats.count.toString()}
           delay={0.2}
+          className="bg-pastel-mint"
         />
       </div>
 
-      <section className="bg-white rounded-theme border border-border overflow-hidden">
+      <section className="bg-white border-2 border-black shadow-brutal overflow-hidden">
         <div className="p-6 border-b border-border flex items-center justify-between">
           <h3 className="text-base font-semibold text-text-main">Recent Patients</h3>
         </div>
@@ -86,13 +89,13 @@ export function Dashboard({ records }: DashboardProps) {
   );
 }
 
-function StatCard({ label, value, isWarning, delay }: { label: string; value: string; isWarning?: boolean; delay: number }) {
+function StatCard({ label, value, isWarning, delay, className }: { label: string; value: string; isWarning?: boolean; delay: number; className?: string }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.3 }}
-      className="bg-white p-5 rounded-theme border border-border"
+      className={cn("p-5 border-2 border-black shadow-brutal", className)}
     >
       <div className="stat-label text-[11px] font-bold text-text-muted uppercase tracking-wider mb-2">{label}</div>
       <p className={cn(
