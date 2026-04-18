@@ -1,6 +1,8 @@
 import React from 'react';
-import { Camera, Upload, X, Save, Loader2 } from 'lucide-react';
+import { Camera, Upload, X, Save, Loader2, Calendar as CalendarIcon } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
+import DatePicker from 'react-datepicker';
+import { parseISO, format } from 'date-fns';
 import { cn } from '@/src/lib/utils';
 import { PatientRecordInput, PatientRecord } from '@/src/types';
 
@@ -123,7 +125,7 @@ export function PatientForm({ onSubmit, isSubmitting, initialData, onCancel }: P
               <textarea
                 name="address"
                 rows={1}
-                className="w-full border border-border rounded-md p-1 md:p-2 text-xs md:text-sm focus:ring-1 focus:ring-accent outline-none"
+                className="w-full border-2 border-black p-1 md:p-2 text-xs md:text-sm focus:ring-1 focus:ring-accent outline-none bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:shadow-none transition-all"
                 placeholder="Street name, City"
                 value={formData.address}
                 onChange={handleChange}
@@ -147,7 +149,7 @@ export function PatientForm({ onSubmit, isSubmitting, initialData, onCancel }: P
                 <label className="block text-[10px] md:text-[11px] font-bold text-text-muted uppercase mb-1">CLINIC</label>
                 <select
                   name="clinicName"
-                  className="w-full border border-border rounded-md p-2 text-sm focus:ring-1 focus:ring-accent outline-none bg-white h-[38px]"
+                  className="w-full border-2 border-black p-2 text-xs md:text-sm focus:ring-1 focus:ring-accent outline-none bg-white h-[38px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:shadow-none transition-all font-bold uppercase tracking-tight appearance-none"
                   value={formData.clinicName}
                   onChange={handleChange as any}
                 >
@@ -182,7 +184,24 @@ export function PatientForm({ onSubmit, isSubmitting, initialData, onCancel }: P
             </div>
 
             <div className="grid grid-cols-2 gap-3 md:gap-4">
-              <Input label="DATE" name="date" type="date" value={formData.date} onChange={handleChange} />
+              <div className="input-group">
+                <label className="block text-[10px] md:text-[11px] font-bold text-text-muted uppercase mb-1">DATE</label>
+                <div className="relative">
+                  <DatePicker
+                    selected={parseISO(formData.date)}
+                    onChange={(date: Date | null) => {
+                      if (date) {
+                        setFormData(prev => ({ ...prev, date: format(date, 'yyyy-MM-dd') }));
+                      }
+                    }}
+                    dateFormat="yyyy-MM-dd"
+                    popperPlacement="bottom-end"
+                    portalId="root"
+                    className="w-full border-2 border-black p-2 text-xs md:text-sm focus:ring-1 focus:ring-accent outline-none bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:shadow-none transition-all font-bold"
+                  />
+                  <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" size={14} />
+                </div>
+              </div>
             </div>
 
             <div className="p-3 md:p-4 bg-[#F9FAFB] border-2 border-black rounded-md flex justify-between items-center">
@@ -236,10 +255,10 @@ export function PatientForm({ onSubmit, isSubmitting, initialData, onCancel }: P
 function Input({ label, ...props }: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div className="input-group">
-      <label className="block text-[11px] font-bold text-text-muted uppercase mb-1">{label}</label>
+      <label className="block text-[10px] md:text-[11px] font-bold text-text-muted uppercase mb-1">{label}</label>
       <input
         {...props}
-        className="w-full border border-border rounded-md p-2 text-sm focus:ring-1 focus:ring-accent outline-none"
+        className="w-full border-2 border-black p-2 text-xs md:text-sm focus:ring-1 focus:ring-accent outline-none bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:shadow-none transition-all font-bold"
       />
     </div>
   );

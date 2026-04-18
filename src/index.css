@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "react-datepicker/dist/react-datepicker.css";
 
 @theme {
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -43,5 +44,52 @@
 
   .shadow-brutal {
     @apply shadow-[4px_4px_0px_0px_rgba(0,0,0,1)];
+  }
+
+  /* React Datepicker Neubrutalist Styling */
+  .react-datepicker {
+    border: 2px solid black !important;
+    border-radius: 0px !important;
+    font-family: var(--font-sans) !important;
+    font-size: 0.7rem !important;
+    background-color: white !important;
+    box-shadow: 4px 4px 0px 0px rgba(0,0,0,1) !important;
+  }
+
+  .react-datepicker__header {
+    background-color: var(--color-pastel-mint) !important;
+    border-bottom: 2px solid black !important;
+    border-radius: 0px !important;
+    padding-top: 4px !important;
+    padding-bottom: 4px !important;
+  }
+
+  .react-datepicker__day-name, .react-datepicker__day, .react-datepicker__time-name {
+    width: 1.5rem !important;
+    line-height: 1.5rem !important;
+    margin: 0.05rem !important;
+  }
+
+  .react-datepicker__day--selected, 
+  .react-datepicker__day--keyboard-selected {
+    background-color: var(--color-accent) !important;
+    color: black !important;
+    font-weight: bold !important;
+    border: 1px solid black !important;
+    border-radius: 0px !important;
+  }
+
+  .react-datepicker__day:hover {
+    background-color: var(--color-pastel-blue) !important;
+    color: black !important;
+    border-radius: 0px !important;
+  }
+
+  .react-datepicker__navigation {
+    top: 10px !important;
+  }
+
+  .react-datepicker-popper {
+    z-index: 100 !important;
   }
 }
