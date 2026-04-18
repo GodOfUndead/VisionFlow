@@ -48,10 +48,12 @@ export function PatientForm({ onSubmit, isSubmitting }: PatientFormProps) {
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
       setFormData(prev => {
-        const updatedParent = { ...(prev[parent as keyof PatientRecordInput] as any), [child]: value };
+        const val = (child === 'total' || child === 'paid') ? Number(value) : value;
+        const updatedParent = { ...(prev[parent as keyof PatientRecordInput] as any), [child]: val };
+        
         if (parent === 'payment') {
-          const total = child === 'total' ? Number(value) : updatedParent.total;
-          const paid = child === 'paid' ? Number(value) : updatedParent.paid;
+          const total = updatedParent.total;
+          const paid = updatedParent.paid;
           updatedParent.remaining = total - paid;
         }
         return { ...prev, [parent]: updatedParent };

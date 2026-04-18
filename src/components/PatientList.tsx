@@ -5,11 +5,13 @@ import { PatientRecord } from '@/src/types';
 
 interface PatientListProps {
   records: PatientRecord[];
+  onDelete: (id: string) => Promise<void>;
 }
 
-export function PatientList({ records }: PatientListProps) {
+export function PatientList({ records, onDelete }: PatientListProps) {
   const [search, setSearch] = React.useState('');
   const [selectedPatient, setSelectedPatient] = React.useState<PatientRecord | null>(null);
+  const [isDeleting, setIsDeleting] = React.useState(false);
 
   const filteredRecords = React.useMemo(() => {
     return records.filter(r =>
@@ -17,6 +19,22 @@ export function PatientList({ records }: PatientListProps) {
       r.mobileNumber?.includes(search)
     );
   }, [records, search]);
+
+  const handleDelete = async () => {
+    if (!selectedPatient) return;
+    if (!window.confirm('Are you sure you want to delete this patient record? This action cannot be undone.')) return;
+    
+    setIsDeleting(true);
+    try {
+      await onDelete(selectedPatient.id);
+      setSelectedPatient(null);
+    } catch (error) {
+      console.error('Failed to delete record', error);
+      alert('Failed to delete record. Please try again.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const exportToCSV = () => {
     const headers = ['Date', 'Clinic', 'Name', 'Mobile', 'Address', 'RE', 'LE', 'ADD', 'Glass', 'Frame', 'Total', 'Paid', 'Remaining'];
@@ -66,7 +84,7 @@ export function PatientList({ records }: PatientListProps) {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* List View */}
-        <div className="lg:col-span-2 bg-white border border-border rounded-theme p-6 flex flex-col h-fit">
+        <div className="lg:col-span-2 bg-white border border-border rounded-theme p-4 md:p-6 flex flex-col h-fit max-h-[calc(100vh-250px)] lg:max-h-none overflow-y-auto">
           <div className="mb-6">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={16} />
@@ -90,9 +108,9 @@ export function PatientList({ records }: PatientListProps) {
                   selectedPatient?.id === record.id ? "bg-[#F0F4FF] -mx-6 px-6" : "hover:bg-bg -mx-6 px-6"
                 )}
               >
-                <div className="patient-info">
-                  <div className="text-sm font-semibold text-text-main">{record.patientName || 'Unnamed Patient'}</div>
-                  <div className="text-xs text-text-muted mt-0.5">
+                <div className="patient-info flex-1 min-w-0 pr-4">
+                  <div className="text-sm font-semibold text-text-main truncate">{record.patientName || 'Unnamed Patient'}</div>
+                  <div className="text-xs text-text-muted mt-0.5 truncate">
                     RE: {record.power?.re || '-'} | LE: {record.power?.le || '-'}
                   </div>
                 </div>
@@ -177,6 +195,16 @@ export function PatientList({ records }: PatientListProps) {
                     <p className="text-[10px] text-text-muted font-bold uppercase">Total</p>
                     <p className="text-base font-bold text-text-main">{formatCurrency(selectedPatient.payment?.total || 0)}</p>
                   </div>
+                </div>
+
+                <div className="pt-6 border-t border-border">
+                  <button
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                    className="w-full flex items-center justify-center gap-2 py-3 border border-red-100 text-red-500 text-xs font-bold uppercase tracking-widest rounded-md hover:bg-red-50 transition-colors disabled:opacity-50"
+                  >
+                    <span>{isDeleting ? 'Deleting...' : 'Delete Record'}</span>
+                  </button>
                 </div>
               </div>
             </div>

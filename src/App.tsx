@@ -50,6 +50,15 @@ export default function App() {
     }
   };
 
+  const handleDeleteRecord = async (id: string) => {
+    try {
+      await patientService.deleteRecord(id);
+    } catch (err) {
+      console.error('Delete error:', err);
+      throw err;
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-zinc-50 flex items-center justify-center">
@@ -99,7 +108,7 @@ export default function App() {
 
       {activeTab === 'dashboard' && <Dashboard records={records} />}
       {activeTab === 'entry' && <PatientForm onSubmit={handleAddRecord} isSubmitting={isSubmitting} />}
-      {activeTab === 'list' && <PatientList records={records} />}
+      {activeTab === 'list' && <PatientList records={records} onDelete={handleDeleteRecord} />}
     </Layout>
   );
 }

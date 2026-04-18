@@ -16,7 +16,7 @@ export function Layout({ children, activeTab, onTabChange, userEmail, onLogout }
       {/* Sidebar */}
       <aside className="fixed left-0 top-0 h-full w-[220px] bg-sidebar border-r border-border z-50 hidden md:flex flex-col p-6">
         <div className="logo text-accent font-bold text-xl mb-10 flex items-center gap-2">
-          VisionFlow
+          OptiTrack
         </div>
 
         <nav className="flex-1">
@@ -80,7 +80,7 @@ export function Layout({ children, activeTab, onTabChange, userEmail, onLogout }
       </div>
 
       {/* Main Content */}
-      <main className="md:ml-[220px] min-h-screen p-8">
+      <main className="md:ml-[220px] min-h-screen p-4 md:p-8 pb-24 md:pb-8">
         <div className="max-w-6xl mx-auto">
           {children}
         </div>
