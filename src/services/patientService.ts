@@ -35,7 +35,7 @@ interface FirestoreErrorInfo {
   }
 }
 
-function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null): Error {
   const errInfo: FirestoreErrorInfo = {
     error: error instanceof Error ? error.message : String(error),
     authInfo: {
@@ -54,8 +54,9 @@ function handleFirestoreError(error: unknown, operationType: OperationType, path
     operationType,
     path
   }
-  console.error('Firestore Error: ', JSON.stringify(errInfo));
-  throw new Error(JSON.stringify(errInfo));
+  const fullError = new Error(JSON.stringify(errInfo));
+  console.error('Firestore Error: ', fullError.message);
+  return fullError;
 }
 
 const COLLECTION_NAME = 'patients';
@@ -77,7 +78,7 @@ export const patientService = {
     }
   },
 
-  subscribeToRecords(callback: (records: PatientRecord[]) => void) {
+  subscribeToRecords(callback: (records: PatientRecord[]) => void, onError?: (error: Error) => void) {
     if (!auth.currentUser) return () => {};
     
     const path = COLLECTION_NAME;
@@ -94,7 +95,8 @@ export const patientService = {
       })) as PatientRecord[];
       callback(records);
     }, (error) => {
-      handleFirestoreError(error, OperationType.LIST, path);
+      const err = handleFirestoreError(error, OperationType.LIST, path);
+      if (onError) onError(err);
     });
   },
 

@@ -28,9 +28,16 @@ export default function App() {
 
   React.useEffect(() => {
     if (user) {
-      const unsubscribe = patientService.subscribeToRecords((data) => {
-        setRecords(data);
-      });
+      const unsubscribe = patientService.subscribeToRecords(
+        (data) => {
+          setRecords(data);
+          setError(null);
+        },
+        (err) => {
+          setError('Failed to fetch records. Please check your network or permissions.');
+          console.error(err);
+        }
+      );
       return () => unsubscribe();
     } else {
       setRecords([]);
