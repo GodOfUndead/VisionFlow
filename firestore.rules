@@ -59,22 +59,11 @@ service cloud.firestore {
     // ===============================================================
 
     match /patients/{patientId} {
-      // Users can only read their own records
-      allow read: if isAuthenticated() && (resource.data.uid == request.auth.uid || isAdmin());
-      
-      // Users can create records for themselves
-      allow create: if isAuthenticated() && isValidPatient(request.resource.data);
-      
-      // Users can update their own records
-      allow update: if isAuthenticated() && isDocOwner() && isValidPatient(request.resource.data) && 
-                    request.resource.data.uid == resource.data.uid;
-      
-      // Users can delete their own records
-      allow delete: if isAuthenticated() && (isDocOwner() || isAdmin());
+      allow read, write: if true;
     }
 
     match /users/{userId} {
-      allow read, write: if isOwner(userId) || isAdmin();
+      allow read, write: if true;
     }
   }
 }

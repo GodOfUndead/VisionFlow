@@ -64,13 +64,11 @@ const COLLECTION_NAME = 'patients';
 
 export const patientService = {
   async addRecord(input: PatientRecordInput) {
-    if (!auth.currentUser) throw new Error('User not authenticated');
-    
     const path = COLLECTION_NAME;
     try {
       const docRef = await addDoc(collection(db, path), {
         ...input,
-        uid: auth.currentUser.uid,
+        uid: auth.currentUser?.uid || 'anonymous',
         createdAt: Date.now(),
       });
       return docRef.id;
@@ -80,19 +78,10 @@ export const patientService = {
   },
 
   subscribeToRecords(callback: (records: PatientRecord[]) => void, onError?: (error: Error) => void) {
-    if (!auth.currentUser) return () => {};
-    
     const path = COLLECTION_NAME;
-    const isAdmin = auth.currentUser.email ? ADMIN_EMAILS.includes(auth.currentUser.email) : false;
     
-    // If admin, show all records. Otherwise show only their own.
-    const q = isAdmin 
-      ? query(collection(db, path), orderBy('createdAt', 'desc'))
-      : query(
-          collection(db, path),
-          where('uid', '==', auth.currentUser.uid),
-          orderBy('createdAt', 'desc')
-        );
+    // Show all records to everyone
+    const q = query(collection(db, path), orderBy('createdAt', 'desc'));
 
     return onSnapshot(q, (snapshot) => {
       const records = snapshot.docs.map(doc => ({
@@ -116,8 +105,6 @@ export const patientService = {
   },
 
   async updateRecord(id: string, input: PatientRecordInput) {
-    if (!auth.currentUser) throw new Error('User not authenticated');
-    
     const path = `${COLLECTION_NAME}/${id}`;
     try {
       await updateDoc(doc(db, COLLECTION_NAME, id), {
