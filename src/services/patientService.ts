@@ -11,6 +11,7 @@ import {
 } from 'firebase/firestore';
 import { db, auth } from '@/src/firebase';
 import { PatientRecord, PatientRecordInput } from '@/src/types';
+import { ADMIN_EMAILS } from '@/src/constants';
 
 export enum OperationType {
   CREATE = 'create',
@@ -82,11 +83,16 @@ export const patientService = {
     if (!auth.currentUser) return () => {};
     
     const path = COLLECTION_NAME;
-    const q = query(
-      collection(db, path),
-      where('uid', '==', auth.currentUser.uid),
-      orderBy('createdAt', 'desc')
-    );
+    const isAdmin = auth.currentUser.email ? ADMIN_EMAILS.includes(auth.currentUser.email) : false;
+    
+    // If admin, show all records. Otherwise show only their own.
+    const q = isAdmin 
+      ? query(collection(db, path), orderBy('createdAt', 'desc'))
+      : query(
+          collection(db, path),
+          where('uid', '==', auth.currentUser.uid),
+          orderBy('createdAt', 'desc')
+        );
 
     return onSnapshot(q, (snapshot) => {
       const records = snapshot.docs.map(doc => ({
