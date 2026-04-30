@@ -20,6 +20,7 @@
         },
         "glass": { "type": "string" },
         "frame": { "type": "string" },
+        "eyeDrop": { "type": "string" },
         "payment": {
           "type": "object",
           "properties": {
@@ -28,6 +29,9 @@
             "remaining": { "type": "number" }
           }
         },
+        "complication": { "type": "string" },
+        "glassesDelivered": { "type": "boolean" },
+        "deliveryDate": { "type": "string" },
         "imageUrl": { "type": "string" },
         "createdAt": { "type": "number" },
         "uid": { "type": "string" }

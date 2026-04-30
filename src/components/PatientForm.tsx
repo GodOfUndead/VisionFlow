@@ -30,6 +30,9 @@ export function PatientForm({ onSubmit, isSubmitting, initialData, onCancel }: P
       frame: '',
       eyeDrop: '',
       payment: { total: 0, paid: 0, remaining: 0 },
+      complication: '',
+      glassesDelivered: false,
+      deliveryDate: null,
       imageUrl: null,
     };
   });
@@ -96,6 +99,9 @@ export function PatientForm({ onSubmit, isSubmitting, initialData, onCancel }: P
       frame: '',
       eyeDrop: '',
       payment: { total: 0, paid: 0, remaining: 0 },
+      complication: '',
+      glassesDelivered: false,
+      deliveryDate: null,
       imageUrl: null,
     });
     setImagePreview(null);
@@ -118,6 +124,18 @@ export function PatientForm({ onSubmit, isSubmitting, initialData, onCancel }: P
             <div className="grid grid-cols-2 gap-3 md:gap-4">
               <Input label="PATIENT NAME" name="patientName" placeholder="e.g. Rahul Sharma" value={formData.patientName} onChange={handleChange} />
               <Input label="MOBILE NUMBER" name="mobileNumber" placeholder="+91 ..." value={formData.mobileNumber} onChange={handleChange} />
+            </div>
+
+            <div className="input-group">
+              <label className="block text-[10px] md:text-[11px] font-bold text-text-muted uppercase mb-1">COMPLICATION</label>
+              <input
+                type="text"
+                name="complication"
+                className="w-full border-2 border-black p-2 text-xs md:text-sm focus:ring-1 focus:ring-accent outline-none bg-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:shadow-none transition-all font-bold"
+                placeholder="Mention any complications..."
+                value={formData.complication}
+                onChange={handleChange}
+              />
             </div>
             
             <div className="input-group">
@@ -215,6 +233,45 @@ export function PatientForm({ onSubmit, isSubmitting, initialData, onCancel }: P
                   value={formData.payment.total.toString()}
                   onChange={handleChange}
                 />
+              </div>
+            </div>
+
+            <div className="p-3 md:p-4 bg-white border-2 border-black rounded-md space-y-4 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+              <div className="flex items-center justify-between">
+                <label className="text-[10px] md:text-[11px] font-bold text-text-muted uppercase cursor-pointer flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="glassesDelivered"
+                    checked={formData.glassesDelivered}
+                    onChange={(e) => setFormData(prev => ({ 
+                      ...prev, 
+                      glassesDelivered: e.target.checked,
+                      deliveryDate: e.target.checked ? (prev.deliveryDate || new Date().toISOString().split('T')[0]) : null
+                    }))}
+                    className="w-4 h-4 border-2 border-black rounded-none appearance-none checked:bg-accent cursor-pointer relative checked:after:content-['✓'] checked:after:absolute checked:after:inset-0 checked:after:flex checked:after:items-center checked:after:justify-center checked:after:text-[10px] checked:after:font-black"
+                  />
+                  Glasses Delivered?
+                </label>
+                
+                {formData.glassesDelivered && (
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-[9px] font-bold text-text-muted whitespace-nowrap">DATE:</span>
+                    <div className="relative">
+                      <DatePicker
+                        selected={formData.deliveryDate ? parseISO(formData.deliveryDate) : null}
+                        onChange={(date: Date | null) => {
+                          if (date) {
+                            setFormData(prev => ({ ...prev, deliveryDate: format(date, 'yyyy-MM-dd') }));
+                          }
+                        }}
+                        dateFormat="yyyy-MM-dd"
+                        popperPlacement="bottom-end"
+                        portalId="root"
+                        className="w-24 bg-transparent border-b border-black text-[11px] font-bold text-right outline-none focus:border-accent"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

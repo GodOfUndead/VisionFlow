@@ -22,6 +22,9 @@ export interface PatientRecord {
   frame: string;
   eyeDrop: string;
   payment: PatientPayment;
+  complication: string;
+  glassesDelivered: boolean;
+  deliveryDate: string | null;
   imageUrl: string | null;
   createdAt: number;
 }

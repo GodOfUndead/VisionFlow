@@ -44,7 +44,7 @@ export function PatientList({ records, onDelete, onEdit }: PatientListProps) {
   };
 
   const exportToCSV = () => {
-    const headers = ['Date', 'Clinic', 'Name', 'Mobile', 'Address', 'RE', 'LE', 'ADD', 'Glass', 'Frame', 'Eye Drop', 'Total', 'Paid', 'Remaining'];
+    const headers = ['Date', 'Clinic', 'Name', 'Mobile', 'Address', 'RE', 'LE', 'ADD', 'Glass', 'Frame', 'Eye Drop', 'Total', 'Paid', 'Remaining', 'Complication', 'Delivered', 'Delivery Date'];
     const rows = records.map(r => [
       r.date,
       r.clinicName,
@@ -59,7 +59,10 @@ export function PatientList({ records, onDelete, onEdit }: PatientListProps) {
       r.eyeDrop,
       r.payment?.total,
       r.payment?.paid,
-      r.payment?.remaining
+      r.payment?.remaining,
+      r.complication,
+      r.glassesDelivered ? 'YES' : 'NO',
+      r.deliveryDate || '-'
     ]);
 
     const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
@@ -239,6 +242,13 @@ function PatientDetailContent({
           <p className="text-xs text-text-muted mt-1 uppercase tracking-wider font-bold">{patient.clinicName || 'No Clinic Specified'}</p>
         </div>
 
+        {patient.complication && (
+          <div className="p-3 bg-red-50 border-2 border-red-200 rounded-md">
+            <span className="text-[10px] font-bold text-red-600 uppercase tracking-widest block mb-1">Complication</span>
+            <p className="text-sm font-medium text-red-900">{patient.complication}</p>
+          </div>
+        )}
+
         <div className="grid grid-cols-2 gap-4">
           <DetailItem label="MOBILE" value={patient.mobileNumber} />
           <DetailItem label="DATE" value={patient.date} />
@@ -268,6 +278,22 @@ function PatientDetailContent({
         <div className="grid grid-cols-2 gap-4">
           <DetailItem label="GLASS / FRAME" value={patient.glass} />
           <DetailItem label="EYE DROP" value={patient.eyeDrop} />
+          <div className="col-span-2">
+            <div className={cn(
+              "p-3 border-2 border-black rounded-md flex items-center justify-between",
+              patient.glassesDelivered ? "bg-pastel-mint" : "bg-pastel-orange/20"
+            )}>
+              <span className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Delivery Status</span>
+              <div className="text-right">
+                <span className="text-xs font-black uppercase tracking-tight">
+                  {patient.glassesDelivered ? 'Delivered' : 'Pending'}
+                </span>
+                {patient.glassesDelivered && patient.deliveryDate && (
+                  <p className="text-[9px] font-bold text-text-muted">{patient.deliveryDate}</p>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="pt-4 border-t-2 border-black flex items-center justify-between">
