@@ -174,6 +174,7 @@ export function PatientForm({ onSubmit, isSubmitting, initialData, onCancel }: P
                   <option value="">Select Clinic</option>
                   <option value="Shakuntala Eye Care">Shakuntala Eye Care</option>
                   <option value="Arogya Eye Care">Arogya Eye Care</option>
+                  <option value="CHC Hathi">CHC Hathi</option>
                 </select>
               </div>
             </div>
