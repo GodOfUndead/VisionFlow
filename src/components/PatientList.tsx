@@ -50,6 +50,8 @@ export function PatientList({ records, onDelete, onEdit }: PatientListProps) {
         if (!matchesSearch) return false;
 
         // Filter by month
+        if (selectedMonth === 'all') return true;
+
         try {
           const recordDate = parseISO(r.date);
           const formattedRecordMonth = format(recordDate, 'yyyy-MM');
@@ -151,6 +153,7 @@ export function PatientList({ records, onDelete, onEdit }: PatientListProps) {
               onChange={(e) => setSelectedMonth(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-transparent border-none appearance-none font-black uppercase tracking-tight text-sm outline-none cursor-pointer"
             >
+              <option value="all">All Records</option>
               {availableMonths.map(month => (
                 <option key={month} value={month}>
                   {formatMonthLabel(month)}
@@ -183,7 +186,7 @@ export function PatientList({ records, onDelete, onEdit }: PatientListProps) {
           <div className="bg-white border-2 border-black shadow-brutal flex flex-col h-full">
             <div className="p-4 border-b-2 border-black bg-zinc-50 flex items-center justify-between">
               <h3 className="font-black uppercase tracking-tight text-xs md:text-sm italic">
-                {formatMonthLabel(selectedMonth)} Records
+                {selectedMonth === 'all' ? 'All Records' : formatMonthLabel(selectedMonth)}
               </h3>
               <span className="bg-black text-white text-[10px] font-black px-2 py-0.5 rounded-full">
                 {filteredRecords.length}

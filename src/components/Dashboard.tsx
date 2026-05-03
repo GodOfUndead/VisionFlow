@@ -30,6 +30,7 @@ export function Dashboard({ records }: DashboardProps) {
 
   const filteredRecords = React.useMemo(() => {
     return records.filter(r => {
+      if (selectedMonth === 'all') return true;
       try {
         const recordDate = parseISO(r.date);
         return format(recordDate, 'yyyy-MM') === selectedMonth;
@@ -70,6 +71,7 @@ export function Dashboard({ records }: DashboardProps) {
             onChange={(e) => setSelectedMonth(e.target.value)}
             className="bg-transparent border-none appearance-none font-black uppercase tracking-tight text-xs outline-none cursor-pointer pr-6"
           >
+            <option value="all">All Time</option>
             {availableMonths.map(month => (
               <option key={month} value={month}>
                 {formatMonthLabel(month)}
@@ -84,7 +86,7 @@ export function Dashboard({ records }: DashboardProps) {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-5">
         <StatCard
-          label={`${formatMonthLabel(selectedMonth)} Revenue`}
+          label={selectedMonth === 'all' ? "Lifetime Revenue" : `${formatMonthLabel(selectedMonth)} Revenue`}
           value={formatCurrency(stats.total)}
           delay={0}
           className="bg-pastel-blue"
@@ -97,7 +99,7 @@ export function Dashboard({ records }: DashboardProps) {
           className="bg-pastel-orange"
         />
         <StatCard
-          label="Patients Seen"
+          label={selectedMonth === 'all' ? "Total Patients" : "Patients Seen"}
           value={stats.count.toString()}
           delay={0.2}
           className="bg-pastel-mint"
@@ -106,7 +108,9 @@ export function Dashboard({ records }: DashboardProps) {
 
       <section className="bg-white border-2 border-black shadow-brutal overflow-hidden">
         <div className="p-4 md:p-6 border-b-2 border-black flex items-center justify-between bg-zinc-50/50">
-          <h3 className="text-xs md:text-base font-black text-text-main uppercase tracking-tighter">Recent activity in {formatMonthLabel(selectedMonth)}</h3>
+          <h3 className="text-xs md:text-base font-black text-text-main uppercase tracking-tighter">
+            Recent activity {selectedMonth === 'all' ? 'overall' : `in ${formatMonthLabel(selectedMonth)}`}
+          </h3>
         </div>
         <div className="divide-y-2 divide-zinc-100">
           {filteredRecords.slice(0, 5).map((record, i) => (
