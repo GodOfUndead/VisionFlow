@@ -1,6 +1,7 @@
 import React from 'react';
-import { Search, Download, Eye, Phone, MapPin, Calendar, ExternalLink, X } from 'lucide-react';
+import { Search, Download, Eye, Phone, MapPin, Calendar, ExternalLink, X, ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { format, parseISO, startOfMonth, endOfMonth, isSameMonth } from 'date-fns';
 import { formatCurrency, cn } from '@/src/lib/utils';
 import { PatientRecord } from '@/src/types';
 
@@ -14,14 +15,51 @@ export function PatientList({ records, onDelete, onEdit }: PatientListProps) {
   const [search, setSearch] = React.useState('');
   const [selectedPatient, setSelectedPatient] = React.useState<PatientRecord | null>(null);
   const [isDeleting, setIsDeleting] = React.useState(false);
-  const detailRef = React.useRef<HTMLDivElement>(null);
+  const [selectedMonth, setSelectedMonth] = React.useState<string>(() => {
+    // Default to current month (YYYY-MM)
+    return format(new Date(), 'yyyy-MM');
+  });
+
+  // Get unique months from records to populate filter
+  const availableMonths = React.useMemo(() => {
+    const months = new Set<string>();
+    // Always include current month in options
+    months.add(format(new Date(), 'yyyy-MM'));
+    
+    records.forEach(r => {
+      if (r.date) {
+        try {
+          const date = parseISO(r.date);
+          months.add(format(date, 'yyyy-MM'));
+        } catch (e) {
+          console.error('Invalid date format', r.date);
+        }
+      }
+    });
+
+    return Array.from(months).sort().reverse();
+  }, [records]);
 
   const filteredRecords = React.useMemo(() => {
-    return records.filter(r =>
-      r.patientName?.toLowerCase().includes(search.toLowerCase()) ||
-      r.mobileNumber?.includes(search)
-    );
-  }, [records, search]);
+    return records
+      .filter(r => {
+        const matchesSearch = 
+          r.patientName?.toLowerCase().includes(search.toLowerCase()) ||
+          r.mobileNumber?.includes(search);
+        
+        if (!matchesSearch) return false;
+
+        // Filter by month
+        try {
+          const recordDate = parseISO(r.date);
+          const formattedRecordMonth = format(recordDate, 'yyyy-MM');
+          return formattedRecordMonth === selectedMonth;
+        } catch (e) {
+          return false;
+        }
+      })
+      .sort((a, b) => b.createdAt - a.createdAt);
+  }, [records, search, selectedMonth]);
 
   const handleSelectPatient = (record: PatientRecord) => {
     setSelectedPatient(record);
@@ -33,7 +71,9 @@ export function PatientList({ records, onDelete, onEdit }: PatientListProps) {
     
     setIsDeleting(true);
     try {
-      await onDelete(selectedPatient.id);
+      if (onDelete) {
+        await onDelete(selectedPatient.id);
+      }
       setSelectedPatient(null);
     } catch (error) {
       console.error('Failed to delete record', error);
@@ -77,67 +117,124 @@ export function PatientList({ records, onDelete, onEdit }: PatientListProps) {
     document.body.removeChild(link);
   };
 
+  const formatMonthLabel = (monthStr: string) => {
+    try {
+      const [year, month] = monthStr.split('-');
+      return format(new Date(parseInt(year), parseInt(month) - 1), 'MMMM yyyy');
+    } catch (e) {
+      return monthStr;
+    }
+  };
+
   return (
-    <div className="space-y-8">
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b-2 border-black pb-6">
-        <div>
-          <h2 className="text-3xl font-black text-text-main uppercase tracking-tighter italic">Patient Records</h2>
-          <p className="text-sm text-text-muted mt-1 font-bold">Manage and retrieve patient history.</p>
+    <div className="space-y-6">
+      <header className="flex flex-col gap-6 border-b-2 border-black pb-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <h2 className="text-3xl font-black text-text-main uppercase tracking-tighter italic">Patient Records</h2>
+            <p className="text-sm text-text-muted mt-1 font-bold">Manage and retrieve patient history.</p>
+          </div>
+          <button
+            onClick={exportToCSV}
+            className="w-full md:w-auto bg-pastel-blue text-black px-6 py-3 font-black uppercase tracking-tighter hover:bg-white transition-all shadow-brutal active:shadow-none active:translate-x-[2px] active:translate-y-[2px] flex items-center justify-center gap-2"
+          >
+            <Download size={18} />
+            <span>Export CSV</span>
+          </button>
         </div>
-        <button
-          onClick={exportToCSV}
-          className="w-full md:w-auto bg-pastel-blue text-black px-6 py-3 font-black uppercase tracking-tighter hover:bg-white transition-all shadow-brutal active:shadow-none active:translate-x-[2px] active:translate-y-[2px] flex items-center justify-center gap-2"
-        >
-          <Download size={18} />
-          <span>Export CSV</span>
-        </button>
+
+        <div className="flex flex-col md:flex-row items-center gap-4 bg-white border-2 border-black p-4 shadow-brutal">
+          <div className="w-full md:w-64 relative">
+            <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
+            <select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-transparent border-none appearance-none font-black uppercase tracking-tight text-sm outline-none cursor-pointer"
+            >
+              {availableMonths.map(month => (
+                <option key={month} value={month}>
+                  {formatMonthLabel(month)}
+                </option>
+              ))}
+            </select>
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+              <ChevronRight size={16} className="rotate-90" />
+            </div>
+          </div>
+
+          <div className="hidden md:block w-px h-8 bg-zinc-200" />
+
+          <div className="flex-1 w-full relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
+            <input
+              type="text"
+              placeholder="Search by name or number within this month..."
+              className="w-full pl-10 pr-4 py-2 bg-transparent border-none font-bold text-sm outline-none placeholder:text-zinc-400"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+        </div>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* List View */}
-        <div className="lg:col-span-2 bg-white border-2 border-black shadow-brutal p-4 md:p-6 flex flex-col h-full overflow-y-auto">
-          <div className="mb-6">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={16} />
-              <input
-                type="text"
-                placeholder="Search by name or number..."
-                className="w-full pl-10 pr-4 py-2 bg-white border border-border rounded-md text-sm outline-none focus:border-accent transition-colors"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+        <div className="lg:col-span-2 space-y-4">
+          <div className="bg-white border-2 border-black shadow-brutal flex flex-col h-full">
+            <div className="p-4 border-b-2 border-black bg-zinc-50 flex items-center justify-between">
+              <h3 className="font-black uppercase tracking-tight text-xs md:text-sm italic">
+                {formatMonthLabel(selectedMonth)} Records
+              </h3>
+              <span className="bg-black text-white text-[10px] font-black px-2 py-0.5 rounded-full">
+                {filteredRecords.length}
+              </span>
             </div>
-          </div>
-
-          <div className="divide-y divide-border">
-            {filteredRecords.map((record) => (
-              <div
-                key={record.id}
-                onClick={() => handleSelectPatient(record)}
-                className={cn(
-                  "py-4 flex justify-between items-center cursor-pointer group transition-colors",
-                  selectedPatient?.id === record.id ? "bg-accent -mx-6 px-6" : "hover:bg-pastel-mint -mx-6 px-6"
-                )}
-              >
-                <div className="patient-info flex-1 min-w-0 pr-4">
-                  <div className="text-sm font-semibold text-text-main truncate">{record.patientName || 'Unnamed Patient'}</div>
-                  <div className="text-xs text-text-muted mt-0.5 truncate">
-                    RE: {record.power?.re || '-'} | LE: {record.power?.le || '-'}
+            
+            <div className="divide-y-2 divide-zinc-100 overflow-y-auto max-h-[600px]">
+              {filteredRecords.map((record) => (
+                <div
+                  key={record.id}
+                  onClick={() => handleSelectPatient(record)}
+                  className={cn(
+                    "p-5 flex justify-between items-center cursor-pointer group transition-all",
+                    selectedPatient?.id === record.id 
+                      ? "bg-accent" 
+                      : "hover:bg-pastel-mint"
+                  )}
+                >
+                  <div className="patient-info flex-1 min-w-0 pr-4">
+                    <div className="text-sm md:text-base font-black text-text-main uppercase tracking-tight truncate">
+                      {record.patientName || 'Unnamed Patient'}
+                    </div>
+                    <div className="flex items-center gap-3 mt-1.5">
+                      <div className="text-[10px] md:text-[11px] font-bold text-text-muted flex items-center gap-1">
+                        <Calendar size={12} />
+                        {record.date}
+                      </div>
+                      <div className="text-[10px] md:text-[11px] font-bold text-text-muted flex items-center gap-1">
+                        <Phone size={12} />
+                        {record.mobileNumber || '-'}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    <span className={cn(
+                      "payment-badge text-[10px] font-black tracking-widest px-2.5 py-1 uppercase italic border border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]",
+                      record.payment?.remaining > 0 ? "bg-pastel-orange" : "bg-pastel-mint"
+                    )}>
+                      {record.payment?.remaining > 0 ? `₹${record.payment.remaining} DUE` : 'CLEARED'}
+                    </span>
                   </div>
                 </div>
-                <span className={cn(
-                  "payment-badge text-[11px] font-bold px-2 py-1 rounded-full",
-                  record.payment?.remaining > 0 ? "bg-[#FEF3C7] text-[#92400E]" : "bg-[#DCFCE7] text-[#166534]"
-                )}>
-                  {record.payment?.remaining > 0 ? `₹${record.payment.remaining} DUE` : 'PAID'}
-                </span>
-              </div>
-            ))}
-            {filteredRecords.length === 0 && (
-              <div className="py-10 text-center text-sm text-text-muted">
-                No matching records found.
-              </div>
-            )}
+              ))}
+              {filteredRecords.length === 0 && (
+                <div className="py-20 text-center flex flex-col items-center justify-center p-6 bg-zinc-50/50">
+                  <CalendarDays size={48} className="text-zinc-300 mb-4 stroke-1" />
+                  <p className="font-black uppercase tracking-tight text-zinc-400">No records found for this month</p>
+                  <p className="text-xs text-zinc-400 mt-1 font-bold">Try selecting a different month or add a new patient.</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -151,9 +248,9 @@ export function PatientList({ records, onDelete, onEdit }: PatientListProps) {
               isDeleting={isDeleting} 
             />
           ) : (
-            <div className="h-[400px] flex flex-col items-center justify-center p-10 text-center bg-white rounded-theme border border-dashed border-border text-text-muted">
+            <div className="h-[400px] flex flex-col items-center justify-center p-10 text-center bg-white border-2 border-black border-dashed text-text-muted shadow-brutal-sm">
               <Eye className="mb-3 opacity-20" size={40} />
-              <p className="text-sm">Select a patient to view details</p>
+              <p className="font-black uppercase tracking-tight text-xs">Select a patient for details</p>
             </div>
           )}
         </div>
@@ -177,12 +274,12 @@ export function PatientList({ records, onDelete, onEdit }: PatientListProps) {
                 animate={{ y: 0 }}
                 exit={{ y: "100%" }}
                 transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                className="relative w-full max-h-[90vh] bg-white border-t-2 border-x-2 border-black rounded-t-[2rem] shadow-2xl overflow-y-auto"
+                className="relative w-full max-h-[90vh] bg-white border-t-4 border-x-4 border-black rounded-t-[3rem] shadow-2xl overflow-y-auto"
               >
-                <div className="sticky top-0 right-0 p-4 flex justify-end z-10 bg-white/80 backdrop-blur-md">
+                <div className="sticky top-0 right-0 p-4 flex justify-end z-10">
                   <button
                     onClick={() => setSelectedPatient(null)}
-                    className="p-2 bg-pastel-mint border-2 border-black rounded-full shadow-brutal active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
+                    className="p-2 bg-pastel-orange border-2 border-black rounded-full shadow-brutal active:shadow-none active:translate-x-[2px] active:translate-y-[2px]"
                   >
                     <X size={24} />
                   </button>
@@ -227,11 +324,11 @@ function PatientDetailContent({
       !isMobile && "border-2 border-black shadow-brutal"
     )}>
       {patient.imageUrl ? (
-        <div className="aspect-video w-full">
+        <div className="aspect-video w-full border-b-2 border-black">
           <img src={patient.imageUrl} alt="Patient" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
         </div>
       ) : (
-        <div className="aspect-video w-full bg-bg flex items-center justify-center text-text-muted border-b border-border">
+        <div className="aspect-video w-full bg-bg flex items-center justify-center text-text-muted border-b-2 border-black">
           <Eye size={48} strokeWidth={1} />
         </div>
       )}
@@ -259,12 +356,12 @@ function PatientDetailContent({
 
         <div className="p-4 bg-bg border-2 border-black rounded-md space-y-4">
           <h4 className="text-[10px] font-bold text-text-muted uppercase tracking-widest">Power Details</h4>
-          <div className="space-y-3">
-            <div className="flex justify-between items-center border-b border-border/50 pb-2">
+          <div className="space-y-3 font-mono">
+            <div className="flex justify-between items-center border-b border-black/10 pb-2">
               <span className="text-[10px] text-text-muted font-bold uppercase">RE (Right Eye)</span>
               <span className="text-sm font-bold text-text-main">{patient.power?.re || '-'}</span>
             </div>
-            <div className="flex justify-between items-center border-b border-border/50 pb-2">
+            <div className="flex justify-between items-center border-b border-black/10 pb-2">
               <span className="text-[10px] text-text-muted font-bold uppercase">LE (Left Eye)</span>
               <span className="text-sm font-bold text-text-main">{patient.power?.le || '-'}</span>
             </div>
